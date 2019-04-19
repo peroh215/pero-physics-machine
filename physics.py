@@ -17,13 +17,15 @@ class Color():
         self.style = style
 
 class ColorScheme():
-    def __init__(self, title, options, text, nums, special, specialTitle):
+    def __init__(self, title, options, text, nums, special, specialTitle, error, errordesc):
         self.title = title
         self.options = options
         self.text = text
         self.nums = nums
         self.special = special
         self.specialTitle = specialTitle
+        self.error = error
+        self.errordesc = errordesc
 
 title = Color(Back.GREEN, Fore.WHITE, Style.BRIGHT)
 option = Color(Back.BLACK, Fore.GREEN, Style.BRIGHT)
@@ -31,8 +33,10 @@ text = Color(Back.BLACK, Fore.WHITE, Style.NORMAL)
 num = Color(Back.BLACK, Fore.WHITE, Style.BRIGHT)
 special = Color(Back.BLACK, Fore.CYAN, Style.NORMAL)
 specialTitle = Color(Back.CYAN, Fore.WHITE, Style.BRIGHT)
+error = Color(Back.RED, Fore.RED, Style.BRIGHT)
+errordesc = Color(Back.BLACK, Fore.RED, Style.NORMAL)
 
-CS = ColorScheme(title, option, text, num, special, specialTitle)
+CS = ColorScheme(title, option, text, num, special, specialTitle, error, errordesc)
 
 def setColor(color):
     print(color.background + color.foreground + color.style, end='')
@@ -108,6 +112,14 @@ def enterToContinue():
     print("to continue...", end='')
     input()
 
+def displayError(error, CS):
+    setColor(CS.error)
+    print("\nERROR:", end='')
+    setColor(CS.errordesc)
+    print('', e)
+    unsetColor()
+    
+
 # Setup
 sclear = True
 clearcmd = ''
@@ -132,92 +144,146 @@ while True:
 
     if (inp == '1'):
         # Velocity
-        clear(sclear, clearcmd)
-        printTitle("Formulas", CS)
-        printOptions({"[1]" : "Medium velocity", "[2]" : "Distance travelled", "[3]" : "Mass to newtons", "[Back]" : ''}, CS)
-        inp = input("> ")
-
-        if (inp == '1'):
-            # Medium velocity
+        while True:
             clear(sclear, clearcmd)
-            t1 = Decimal(input("\nStarting time (secs): "))
-            t2 = Decimal(input("\nFinishing time (secs): "))
-            S1 = Decimal(input("\nStarting distance (m): "))
-            S2 = Decimal(input("\nFinishing distance (m): "))
-            mv = mVelocity(S1, S2, t1, t2)
-            print("\nMedium velocity:", mv, "m/s\n")
+            printTitle("Formulas", CS)
+            printOptions({"[1]" : "Medium velocity", "[2]" : "Distance travelled", "[3]" : "Mass to newtons", "[Back]" : ''}, CS)
+            inp = input("> ")
 
-        elif (inp == '2'):
-            # Distance travelled
-            clear(sclear, clearcmd)
+            if (inp == '1'):
+                # Medium velocity
+                clear(sclear, clearcmd)
+                printSTitle("Medium velocity", CS)
 
-        elif (inp == '3'):
-            # Mass to newtons
-            clear(sclear, clearcmd)
-            printSTitle("Mass to newtons", CS)
-            m = coloredInput("\nMass (kg): ", CS)
-            a = coloredInput("Acceleration (m/s²): ", CS)
-            n = m*a
+                # Starting time
+                setColor(CS.text)
+                print("\nStarting time", end=' ')
+                setColor(CS.special)
+                print("(secs)", end='')
+                setColor(CS.text)
+                t1 = Decimal(input(": "))
 
-            coloredDisplay("\nForce (N): ", n, CS)
-            coloredFormula({ str(m) : " x ", str(a) : " = ", str(n) : 'N'}, CS)
-            enterToContinue()
+                # Finishing time
+                setColor(CS.text)
+                print("\nFinishing time", end=' ')
+                setColor(CS.special)
+                print("(secs)", end='')
+                setColor(CS.text)
+                t2 = Decimal(input(": "))
 
-        elif (inp.lower() == 'back'):
-            continue
+                # Starting distance
+                setColor(CS.text)
+                print("\nStarting distance", end=' ')
+                setColor(CS.special)
+                print("(m)", end='')
+                setColor(CS.text)
+                S1 = Decimal(input(": "))
+
+                # Finishing distance
+                setColor(CS.text)
+                print("\nFinishing distance", end=' ')
+                setColor(CS.special)
+                print("(m)", end='')
+                setColor(CS.text)
+                S2 = Decimal(input(": "))
+
+                mv = mVelocity(S1, S2, t1, t2)
+                print("\nMedium velocity:", mv, "m/s\n")
+
+                enterToContinue()
+                break
+
+            elif (inp == '2'):
+                # Distance travelled
+                clear(sclear, clearcmd)
+                break
+
+            elif (inp == '3'):
+                # Mass to newtons
+                clear(sclear, clearcmd)
+                printSTitle("Mass to newtons", CS)
+                while True:
+                    try:
+                        m = coloredInput("\nMass (kg): ", CS)
+                        a = coloredInput("Acceleration (m/s²): ", CS)
+                        break
+                    except Exception as e:
+                        displayError(e, CS)
+                n = m*a
+                coloredDisplay("\nForce (N): ", n, CS)
+                coloredFormula({ str(m) : " x ", str(a) : " = ", str(n) : 'N'}, CS)
+                enterToContinue()
+                break
+
+            elif (inp.lower() == 'back'):
+                break
 
     elif (inp == '2'):
         # Convert unit
-        clear(sclear, clearcmd)
-        printTitle("Unity conversion", CS)
-        printOptions({"[1]" : "Km/h to m/s", "[2]" : "M/s to km/h", "[3]" : "Mph to km/h", "[4]" : "Km/h to mph", "[5]" : "Mph to m/s", "[6]" : "M/s to mph", "[Back]" : ''}, CS)
+        while True:
+            clear(sclear, clearcmd)
+            printTitle("Unity conversion", CS)
+            printOptions({"[1]" : "Km/h to m/s", "[2]" : "M/s to km/h", "[3]" : "Mph to km/h", "[4]" : "Km/h to mph", "[5]" : "Mph to m/s", "[6]" : "M/s to mph", "[Back]" : ''}, CS)
 
-        unit1 = 'ERROR'
-        multi = Decimal(0)
-        div = False
-        inp = input("> ")
+            try:
+                inp = input("> ")
+            except Exception as e:
+                displayError(e, CS)
 
-        if (inp == '1'):
-            multi = Decimal(3.6)
-            unit1 = "Km/h"
-            unit2 = "m/s"
-            div = True
-        elif (inp == '2'):
-            multi = Decimal(3.6)
-            unit1 = "M/s"
-            unit2 = "km/h"
+            unit1 = 'ERROR'
+            unit2 = 'ERROR'
+            multi = Decimal(0)
             div = False
-        elif (inp == '3'):
-            multi = Decimal(1.609344)
-            unit1 = "Km/h"
-            unit2 = "mph"
-            div = True
-        elif (inp == '4'):
-            multi = Decimal(1.609344)
-            unit1 = "Mph"
-            unit2 = "km/h"
-            div = False
-        elif (inp == '5'):
-            multi = Decimal(0.44704)
-            unit1 = "Mph"
-            unit2 = "m/s"
-            div = True
-        elif (inp == '6'):
-            multi = Decimal(0.44704)
-            unit1 = "Mph"
-            unit2 = "m/s"
-            div = False
-        elif (inp.lower() == 'back'):
-            continue
+
+            if (inp == '1'):
+                multi = Decimal(3.6)
+                unit1 = "Km/h"
+                unit2 = "m/s"
+                div = True
+            elif (inp == '2'):
+                multi = Decimal(3.6)
+                unit1 = "M/s"
+                unit2 = "km/h"
+                div = False
+            elif (inp == '3'):
+                multi = Decimal(1.609344)
+                unit1 = "Mph"
+                unit2 = "km/h"
+                div = True
+            elif (inp == '4'):
+                multi = Decimal(1.609344)
+                unit1 = "Km/h"
+                unit2 = "mph"
+                div = False
+            elif (inp == '5'):
+                multi = Decimal(0.44704)
+                unit1 = "M/s"
+                unit2 = "Mph"
+                div = True
+            elif (inp == '6'):
+                multi = Decimal(0.44704)
+                unit1 = "Mph"
+                unit2 = "m/s"
+                div = False
+                break
+            elif (inp.lower() == 'back'):
+                break
+            else:
+                continue
+            break
 
         clear(sclear, clearcmd)
         printSTitle(str(unit1 + ' to ' + unit2), CS)
-        setColor(CS.special)
-        print('\n' + unit1 + ': ', end='')
-        setColor(CS.nums)
-        uv1 = Decimal(input())
-        unsetColor()
-
+        while True:
+            try:
+                setColor(CS.special)
+                print('\n' + unit1 + ': ', end='')
+                setColor(CS.nums)
+                uv1 = Decimal(input())
+                unsetColor()
+                break
+            except Exception as e:
+                displayError(e, CS)
         t = 0
         if (div == False): t = uv1 * multi
         else: t = uv1 / multi
@@ -261,7 +327,12 @@ while True:
 
             if (inp == '1'):
                 # Decimal precision
-                getcontext().prec = (int(input("\nDecimal precision: ")) + 1)
+                while True:
+                    try:
+                        getcontext().prec = (int(input("\nDecimal precision: ")) + 1)
+                        break
+                    except Exception as e:
+                        displayError(e, CS)
             elif (inp == '2'):
                 # Terminal cleaning
                 while True:
